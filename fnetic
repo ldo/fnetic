@@ -1,0 +1,62 @@
+#!/usr/bin/python3
+#+
+# Render characters of text into words according to the NATO Phonetic
+# Alphabet <http://en.wikipedia.org/wiki/NATO_phonetic_alphabet>. Pass one
+# or more words/phrases on the command line, and the rendition will be
+# written to standard output. This script only does the letters.
+#
+# Written 2011 April 20 by Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+#-
+
+import sys
+
+letters = \
+    (
+        "alpha",
+        "bravo",
+        "charlie",
+        "delta",
+        "echo",
+        "foxtrot",
+        "golf",
+        "hotel",
+        "india",
+        "juliet",
+        "kilo",
+        "lima",
+        "mike",
+        "november",
+        "oscar",
+        "papa",
+        "quebec",
+        "romeo",
+        "sierra",
+        "tango",
+        "uniform",
+        "victor",
+        "whiskey",
+        "xray",
+        "yankee",
+        "zulu",
+    )
+
+for arg in sys.argv[1:] :
+    first = True
+    for ch in arg :
+        if not first :
+            sys.stdout.write(" ")
+        #end if
+        first = False
+        if ch >= 'a' and ch <= 'z' :
+            render = letters[ord(ch) - ord('a')]
+        elif ch >= 'A' and ch <= 'Z' :
+            render = letters[ord(ch) - ord('A')]
+        else :
+            render = ch
+        #end if
+        sys.stdout.write(render)
+    #end for
+    if not first :
+        sys.stdout.write("\n")
+    #end if
+#end for
