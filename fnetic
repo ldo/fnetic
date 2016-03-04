@@ -3,7 +3,7 @@
 # Render characters of text into words according to various phonetic
 # alphabets <http://en.wikipedia.org/wiki/NATO_phonetic_alphabet>. Pass one
 # or more words/phrases on the command line, and the rendition will be
-# written to standard output. Optionally use the option “--variant=«variant»”
+# written to standard output. Optionally use the option “--alphabet=«alphabet»”
 # to specify which alphabet to use, the default being NATO.
 #
 # This script only does the letters.
@@ -280,22 +280,22 @@ opts, args = getopt.getopt \
   (
     sys.argv[1:],
     "",
-    ["variant="]
+    ["alphabet="]
   )
-variant = default
+alphabet = default
 for keyword, value in opts :
-    if keyword == "--variant" :
+    if keyword == "--alphabet" :
         if value.lower() not in alphabets :
             raise getopt.GetoptError \
               (
-                "no such variant “{}”, valid values are {}"
+                "no such alphabet “{}”, valid values are {}"
                 .format(value, ", ".join(sorted("“{}”".format(k) for k in alphabets)))
               )
         #end if
-        variant = value.lower()
+        alphabet = value.lower()
     #end if
 #end for
-letters = alphabets[variant]
+letters = alphabets[alphabet]
 for arg in args :
     first = True
     for ch in arg :
