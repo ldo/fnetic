@@ -1,16 +1,21 @@
 #!/usr/bin/python3
 #+
-# Render characters of text into words according to the NATO Phonetic
-# Alphabet <http://en.wikipedia.org/wiki/NATO_phonetic_alphabet>. Pass one
+# Render characters of text into words according to various phonetic
+# alphabets <http://en.wikipedia.org/wiki/NATO_phonetic_alphabet>. Pass one
 # or more words/phrases on the command line, and the rendition will be
-# written to standard output. This script only does the letters.
+# written to standard output. Optionally use the option “--variant=«variant»”
+# to specify which alphabet to use, the default being NATO.
 #
-# Written 2011 April 20 by Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+# This script only does the letters.
+#
+# Copyright 2011, 2015 by Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+# Licensed under Creative Commons CC0 <https://creativecommons.org/publicdomain/zero/1.0/>.
 #-
 
 import sys
+import getopt
 
-letters = \
+default_letters = \
     (
         "alpha",
         "bravo",
@@ -39,8 +44,259 @@ letters = \
         "yankee",
         "zulu",
     )
+alphabets = {}
+default = "nato"
+for name, variation in \
+    (
+        ("nato", {}),
+        ("icao", # original standard
+            {
+                "c" : "coca",
+                "m" : "metro",
+                "n" : "nectar",
+                "u" : "union",
+                "x" : "extra",
+            }
+        ),
+        ("pakistan1",
+            {"i" : "indigo"},
+        ),
+        ("pakistan2",
+            {"i" : "italy"},
+        ),
+    ) \
+:
+    alphabets[name] = dict(zip((chr(c) for c in range(ord("a"), ord("z") + 1)), default_letters), **variation)
+#end for
+for name, letters, alternate in \
+    (
+        ("rn",
+            (
+                "apples",
+                "butter",
+                "charlie",
+                "duff",
+                "edward",
+                "freddy",
+                "george",
+                "harry",
+                "ink",
+                "johnnie",
+                "king",
+                "london",
+                "monkey",
+                "nuts",
+                "orange",
+                "pudding",
+                "queenie",
+                "robert",
+                "sugar",
+                "tommy",
+                "uncle",
+                "vinegar",
+                "willie",
+                "xerxes",
+                "yellow",
+                "zebra",
+            ),
+            None,
+        ),
+        ("western_front",
+            (
+                "ack",
+                "beer",
+                "charlie",
+                "don",
+                "edward",
+                "freddie",
+                "gee",
+                "harry",
+                "ink",
+                "johnnie",
+                "king",
+                "london",
+                "emma",
+                "nuts",
+                "oranges",
+                "pip",
+                "queen",
+                "robert",
+                "esses",
+                "toc",
+                "uncle",
+                "vic",
+                "william",
+                "x-ray",
+                "yorker",
+                "zebra",
+            ),
+            None,
+        ),
+        ("raf1",
+            (
+                "ace",
+                "beer",
+                "charlie",
+                "don",
+                "edward",
+                "freddie",
+                "george",
+                "harry",
+                "ink",
+                "johnnie",
+                "king",
+                "london",
+                "monkey",
+                "nuts",
+                "orange",
+                "pip",
+                "queen",
+                "robert",
+                "sugar",
+                "toc",
+                "uncle",
+                "vic",
+                "william",
+                "x-ray",
+                "yorker",
+                "zebra",
+            ),
+            None,
+        ),
+        ("raf2",
+            (
+                "able",
+                "baker",
+                "charlie",
+                "dog",
+                "easy",
+                "fox",
+                "george",
+                "how",
+                "item",
+                "jig",
+                "king",
+                "love",
+                "mike",
+                "nab",
+                "oboe",
+                "peter",
+                "queen",
+                "roger",
+                "sugar",
+                "tare",
+                "uncle",
+                "victor",
+                "william",
+                "x-ray",
+                "yoke",
+                "zebra",
+            ),
+            {
+                "a" : "affirm",
+                "i" : "interrogatory",
+                "j" : "johnny",
+                "n" : "negat",
+                "p" : "prep",
+            },
+        ),
+        ("us",
+            (
+                "able",
+                "baker",
+                "charlie",
+                "dog",
+                "easy",
+                "fox",
+                "george",
+                "how",
+                "item",
+                "jig",
+                "king",
+                "love",
+                "mike",
+                "nan",
+                "oboe",
+                "peter",
+                "queen",
+                "roger",
+                "sugar",
+                "tare",
+                "uncle",
+                "victor",
+                "william",
+                "x-ray",
+                "yoke",
+                "zebra",
+            ),
+            None,
+        ),
+        ("ican", # International Commission for Air Navigation, pre-ICAO
+            (
+                "amsterdam",
+                "baltimore",
+                "casablanca",
+                "denmark",
+                "edison",
+                "florida",
+                "gallipoli",
+                "havana",
+                "italia",
+                "jerusalem",
+                "kilogramme",
+                "liverpool",
+                "madagascar",
+                "new_york",
+                "oslo",
+                "paris",
+                "quebec",
+                "roma",
+                "santiago",
+                "tripoli",
+                "upsala",
+                "valencia",
+                "washington",
+                "xanthippe",
+                "yokohama",
+                "zurich",
+            ),
+            None,
+        ),
+    ) \
+:
+    assert len(letters) == 26
+    alphabets[name + ("", "a")[alternate != None]] = dict(zip((chr(c) for c in range(ord("a"), ord("z") + 1)), letters))
+    if alternate != None :
+        alphabets[name + "b"] = dict(zip((chr(c) for c in range(ord("a"), ord("z") + 1)), letters), **alternate)
+    #end if
+#end for
+alphabets["signalese"] = dict(alphabets["western_front"])
+del name, variation, letters, alternate
 
-for arg in sys.argv[1:] :
+#+
+# Mainline
+#-
+opts, args = getopt.getopt \
+  (
+    sys.argv[1:],
+    "",
+    ["variant="]
+  )
+variant = default
+for keyword, value in opts :
+    if keyword == "--variant" :
+        if value.lower() not in alphabets :
+            raise getopt.GetoptError \
+              (
+                "no such variant “{}”, valid values are {}"
+                .format(value, ", ".join(sorted("“{}”".format(k) for k in alphabets)))
+              )
+        #end if
+        variant = value.lower()
+    #end if
+#end for
+letters = alphabets[variant]
+for arg in args :
     first = True
     for ch in arg :
         if not first :
@@ -48,9 +304,9 @@ for arg in sys.argv[1:] :
         #end if
         first = False
         if ch >= 'a' and ch <= 'z' :
-            render = letters[ord(ch) - ord('a')]
+            render = letters[ch]
         elif ch >= 'A' and ch <= 'Z' :
-            render = letters[ord(ch) - ord('A')]
+            render = letters[ch.lower()]
         else :
             render = ch
         #end if
