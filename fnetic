@@ -8,7 +8,7 @@
 #
 # This script only does the letters.
 #
-# Copyright 2011, 2015 by Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
+# Copyright 2011-2019 by Lawrence D'Oliveiro <ldo@geek-central.gen.nz>.
 # Licensed under Creative Commons CC0 <https://creativecommons.org/publicdomain/zero/1.0/>.
 #-
 
@@ -276,11 +276,12 @@ del name, variation, letters, alternate
 #+
 # Mainline
 #-
+listit = False
 opts, args = getopt.getopt \
   (
     sys.argv[1:],
     "",
-    ["alphabet="]
+    ["alphabet=", "list"]
   )
 alphabet = default
 for keyword, value in opts :
@@ -293,9 +294,23 @@ for keyword, value in opts :
               )
         #end if
         alphabet = value.lower()
+    elif keyword == "--list" :
+        listit = True
     #end if
 #end for
 letters = alphabets[alphabet]
+if listit :
+    max_name_len = max(len(n) for n in letters.values())
+    for i in range(6) :
+        for j in range(5) :
+            ch = chr(i * 5 + j + ord("a"))
+            if ch <= "z" :
+                sys.stdout.write("  {} {:{}}".format(ch.upper(), letters[ch].upper(), max_name_len))
+            #end if
+        #end for
+        sys.stdout.write("\n")
+    #end for
+#end if
 for arg in args :
     first = True
     for ch in arg :
