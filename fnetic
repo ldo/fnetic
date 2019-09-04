@@ -300,6 +300,7 @@ for keyword, value in opts :
 #end for
 letters = alphabets[alphabet]
 if listit :
+    sys.stdout.write("alphabet = {}\n".format(alphabet))
     max_name_len = max(len(n) for n in letters.values())
     for i in range(6) :
         for j in range(5) :
